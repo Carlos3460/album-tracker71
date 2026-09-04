@@ -18,6 +18,7 @@
 
 const formEl = document.getElementById("album-form");
 const mainEl = document.querySelector("#album-container");
+let albums = [];
 
 /**
  * Eventos
@@ -33,6 +34,17 @@ const mainEl = document.querySelector("#album-container");
  * 5.Crear un objeto con la informacion usando Object.formEntries()
  * object from entries recibe un array de arrays
  */
+window.addEventListener("load", (event) =>{
+  if(getItemLocalStorage("albums") == undefined) return;
+  albums = [...getItemLocalStorage("albums")];
+  albums.map((album) => renderCard(album, mainEl));
+  /**
+   * segunda opcion
+   * getItemLocalStorage("albums").forEch((album) => albums.push(album))
+   */
+});
+
+
 formEl.addEventListener("submit", (event)=>{
     event.preventDefault(); //para que cuando presiones el boton no se recargue la pagina
     const formData = new FormData(formEl); //guarda lo escrito en las barras
@@ -40,23 +52,65 @@ formEl.addEventListener("submit", (event)=>{
     console.log(formData);
     const dataArray = [...formData]; 
     console.log(dataArray);
-    const dataObject = Object.fromEntries(dataArray);
-    console.log(dataObject);
+    const album = Object.fromEntries(dataArray);
+    console.log(album);
     /* como hacer todo eso en una linea 
     const album = Object.fromEntries([...new FormData(formEl)]);
     */
-
+   albums.push(album);
+   setLocalStorage("albums", albums);
+   //Limpiamos antes de volver a renderizar las cards, para evitar la acumulacion
+   mainEl.innerHTML = "";
+   //Renderizamos todas las cards dentro del array de albums
+   albums.map((album) => renderCard(album, mainEl));
+  formEl.reset();
 });
-const card = `
+const renderCard = (albumObject, htmlElement) =>{
+  
+  const card = `
 <div class="card" style="width: 18rem;">
   <div class="card-body">
-    <h5 class="card-title">Card title</h5>
-    <h6 class="card-subtitle mb-2 text-body-secondary">Card subtitle</h6>
-    <p class="card-text">Some quick example text to build on the card title and make up the bulk of the card’s content.</p>
-    <a href="#" class="card-link">Card link</a>
-    <a href="#" class="card-link">Another link</a>
+    <h5 class="card-title">${albumObject.Title}</h5>
+    <h6 class="card-subtitle mb-2 text-body-secondary">${albumObject.Artist}</h6>
+    <p class="card-text">Genero: ${albumObject.Genre}</p>
+    <a href="#" class="card-link">Ano de lanzamiento: ${albumObject.ReleaseYear}</a>
+    <a href="#" class="card-link">Rating: ${albumObject.Raiting}</a>
+    <h6 class="card-subtitle mb-2 text-body-secondary">Listened: ${albumObject.Listened}</h6>
   </div>
 </div>`;
+htmlElement.insertAdjacentHTML("beforeend", card);
+};
+
+const setLocalStorage = (key, value) => {
+  //Paso 1. convertir el valor a texto
+  const textValue = JSON.stringify(value);
+  //Paso 2. almacenar
+  localStorage.setItem(key, textValue);
+};
+const getItemLocalStorage = (key) =>{
+ if(localStorage.getItem(key) == null) return;
+ //convertimos de texto a lenguaje js
+ const data = JSON.parse(localStorage.getItem(key));
+ return data;
+}
+/**
+ *Opcion solo para este script
+ *  const renderCard = (albumObject) =>{
+  
+  const card = `
+<div class="card" style="width: 18rem;">
+  <div class="card-body">
+    <h5 class="card-title">${albumObject.title}</h5>
+    <h6 class="card-subtitle mb-2 text-body-secondary">${albumObject.artist}</h6>
+    <p class="card-text">Genero: ${albumObject.genre}</p>
+    <a href="#" class="card-link">Ano de lanzamiento: ${albumObject.year}</a>
+    <a href="#" class="card-link">Rating: ${albumObject.rating}</a>
+  </div>
+</div>`;
+htmlElement.insertAdjacentHTML("beforeend", card);
+};
+ */
+
 /**
  * Manipulacion de la interfaz
  * 1.Propiedad llamada innerhtml dentro de ella podremos observar
@@ -71,7 +125,7 @@ console.log(mainEl.innerHTML);
 console.log("text content");
 console.log(mainEl.textContent);
 
-mainEl.innerHTML += "<h1> Hola ch 71</h1>";
+//mainEl.innerHTML += "<h1> Hola ch 71</h1>";
 mainEl.innerHTML += card;
 console.log(mainEl.innerHTML);
 
@@ -93,3 +147,4 @@ mainEl.insertAdjacentHTML(
   "<p>Insertado por insert adjacent html</p>",
 );
 mainEl.insertAdjacentHTML("beforeend", card);
+
